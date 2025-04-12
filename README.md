@@ -7,7 +7,6 @@ To design and implement a Python function for calculating the volume of a cylind
 To calculate Volume of Cylinder by using LLM Function-Calling by passing arguments through function call and display volume in JSON format.
 
 ### DESIGN STEPS:
-
 #### STEP 1:
 Import required libraries: os, openai, json, math. Load the API key securely using dotenv to access OpenAI.
 
@@ -20,75 +19,155 @@ Create a user message to request cylinder volume calculation and show the calcul
 2. Messages: User input
 3. Functions: Defined function metadata
 4. Function Call: Explicitly request "volume_of_cylinder"
-   
+
 ### PROGRAM:
-```
+~~~
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
 import os
 import openai
 
 from dotenv import load_dotenv, find_dotenv
 _ = load_dotenv(find_dotenv()) # read local .env file
 openai.api_key = os.environ['OPENAI_API_KEY']
-```
-```
+
+
+# In[2]:
+
+
+import json
 import math
-def calculate_cylinder_volume(radius, height):
-    """
-    Calculate the volume of a cylinder using the formula:
-    Volume = π * r^2 * h
-    """
-    if radius <= 0 or height <= 0:
-        return "Radius and height must be positive numbers."
-    
+
+def get_cylinder_volume(radius, height):
+    """Calculate the volume of a cylinder given its radius and height"""
     volume = math.pi * (radius ** 2) * height
-    return round(volume, 2)
-```
-```
-def chat_with_openai(prompt):
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[
-            {"role": "system", "content": "You are an assistant that helps calculate the volume of a cylinder."},
-            {"role": "user", "content": prompt},
-        ],
-        functions=[
-            {
-                "name": "calculate_cylinder_volume",
-                "description": "Calculate the volume of a cylinder given radius and height.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "radius": {"type": "number", "description": "Radius of the cylinder (in units)"},
-                        "height": {"type": "number", "description": "Height of the cylinder (in units)"},
-                    },
-                    "required": ["radius", "height"],
+    cylinder_info = {
+        "radius": radius,
+        "height": height,
+        "volume": round(volume, 2),
+        "unit": "cubic units"
+    }
+    return json.dumps(cylinder_info)
+
+
+
+# In[3]:
+
+
+functions = [
+    {
+        "name": "get_cylinder_volume",
+        "description": "Calculate the volume of a cylinder given its radius and height",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "radius": {
+                    "type": "number",
+                    "description": "The radius of the cylinder base in units",
                 },
-            }
-        ],
-        function_call="auto",  
-    )
-    
-    if "function_call" in response["choices"][0]["message"]:
-        function_name = response["choices"][0]["message"]["function_call"]["name"]
-        arguments = eval(response["choices"][0]["message"]["function_call"]["arguments"])
-        if function_name == "calculate_cylinder_volume":
-            radius = arguments["radius"]
-            height = arguments["height"]
-            return calculate_cylinder_volume(radius, height)
-    
-    return response["choices"][0]["message"]["content"]
-```
-```
-radius = float(input("Enter the radius of the cylinder: "))
-height = float(input("Enter the height of the cylinder: "))
+                "height": {
+                    "type": "number",
+                    "description": "The height of the cylinder in units",
+                }
+            },
+            "required": ["radius", "height"],
+        },
+    }
+]
 
-prompt = f"What is the volume of a cylinder with a radius of {radius} and a height of {height}?"
-result = chat_with_openai(prompt)
-print("Result:", result)
-```
+
+# In[4]:
+
+
+messages = [
+    {
+        "role": "user",
+        "content": "What is the volume of a cylinder with radius 5 and height 10?"
+    }
+]
+
+
+# In[5]:
+
+
+import openai
+
+
+# In[6]:
+
+
+# Call the ChatCompletion endpoint
+response = openai.ChatCompletion.create(
+    # OpenAI Updates: As of June 2024, we are now using the GPT-3.5-Turbo model
+    model="gpt-4-turbo",
+    messages=messages,
+    functions=functions
+)
+
+
+# In[7]:
+
+
+print(response)
+
+
+# In[8]:
+
+
+response_message = response["choices"][0]["message"]
+
+
+# In[9]:
+
+
+response_message
+
+
+# In[10]:
+
+
+response_message["content"]
+
+
+# In[11]:
+
+
+response_message["function_call"]
+
+
+# In[12]:
+
+
+json.loads(response_message["function_call"]["arguments"])
+
+
+# In[13]:
+
+
+json.loads(response_message["function_call"]["arguments"])
+
+
+# In[14]:
+
+
+args = json.loads(response_message["function_call"]["arguments"])
+
+
+# In[15]:
+
+
+get_cylinder_volume(**args)
+
+
+# In[ ]:
+~~~
+
 ### OUTPUT:
-![image](https://github.com/user-attachments/assets/99fd384a-092b-4aa7-b609-d263be1c5cdb)
-
+![image](https://github.com/user-attachments/assets/aace93ef-ceb8-470e-bfc8-a88d7444f4fa)
 
 ### RESULT:
 Thus, The integration of a Mathematical Calulations with a Chat Completion System using LLM Function-Calling is executed successfully.
